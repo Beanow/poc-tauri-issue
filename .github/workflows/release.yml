@@ -75,7 +75,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tauriScript: cargo tauri
+          tauriScript: yarn tauri
           args: --verbose
           tagName: poc-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "POC v__VERSION__"

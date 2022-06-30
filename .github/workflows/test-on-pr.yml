@@ -73,5 +73,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tauriScript: cargo tauri
+          tauriScript: yarn tauri
           args: --verbose
