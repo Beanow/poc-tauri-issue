@@ -28,10 +28,7 @@ jobs:
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf flatpak flatpak-builder
-          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-          flatpak --version
-          flatpak-builder --version
+          sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
 
       - name: Get current date
         run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
@@ -40,21 +37,6 @@ jobs:
       - name: Get current date
         if: matrix.platform == 'windows-latest'
         run: echo "CURRENT_DATE=$(Get-Date -Format "yyyy-MM-dd")" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-      
-      - name: Get tauri submodule commit
-        run: cd submodules/tauri; echo "TAURI_SUBMODULE_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_ENV
-
-      - name: Cache flatpak runtimes
-        uses: actions/cache@v3
-        env:
-          cache-name: flatpak_dir
-        with:
-          path: |
-            ~/.local/share/flatpak
-          key: ${{ matrix.platform }}-stable-${{ env.cache-name }}-${{ hashFiles('**/tauri.conf.json') }}-${{ env.CURRENT_DATE }}
-          restore-keys: |
-            ${{ matrix.platform }}-stable-${{ env.cache-name }}-${{ hashFiles('**/tauri.conf.json') }}-
-            ${{ matrix.platform }}-stable-${{ env.cache-name }}-
 
       - name: Cache cargo state
         uses: actions/cache@v3
@@ -84,23 +66,10 @@ jobs:
             ${{ matrix.platform }}-stable-${{ env.cache-name }}-${{ hashFiles('src-tauri/Cargo.lock', '**/tauri.conf.json') }}-
             ${{ matrix.platform }}-stable-${{ env.cache-name }}-
 
-      - name: Cache cargo-tauri
-        id: cargo-tauri-cache
-        uses: actions/cache@v3
-        env:
-          cache-name: cargo_cargo-tauri
-        with:
-          path: ~/.cargo/bin/cargo-tauri
-          key: ${{ matrix.platform }}-stable-${{ env.cache-name }}-${{ env.TAURI_SUBMODULE_COMMIT }}
-
-      - name: install local tauri-cli
-        if: steps.cargo-tauri-cache.outputs.cache-hit != 'true'
-        run: yarn setup-cli
-
       - name: install app dependencies and build it
         run: yarn && yarn build
 
-      - uses: beanow/tauri-action@dev
+      - uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
